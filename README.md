@@ -4,12 +4,12 @@ REST API backend untuk sistem Point of Sale dengan Golang dan PostgreSQL.
 
 ## Fitur
 
-- ✅ JWT Authentication
-- ✅ Role Based Access Control (RBAC) - 2 role: cashier, owner
-- ✅ CRUD Sale Order
-- ✅ CRUD User Cashier
-- ✅ Pagination & Limit
-- ✅ Standard Response Format
+- JWT Authentication
+- Role Based Access Control (RBAC) - 2 role: cashier, owner
+- CRUD Sale Order
+- CRUD User Cashier
+- Pagination & Limit
+- Standard Response Format
 
 ## Tech Stack
 
@@ -62,6 +62,9 @@ JWT_SECRET=your-super-secret-key-change-in-production
 JWT_EXPIRY_HOURS=24
 
 SERVER_PORT=8080
+
+#GIN CONFIGURATION (USE debug FOR DEBUG MODE AND release FOR PRODUCTION MODE)
+GIN_MODE=debug
 ```
 
 ### 4. Install Dependencies
