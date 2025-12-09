@@ -106,7 +106,7 @@ Setelah pertama kali dijalankan, sistem akan membuat user default:
 | GET | /sale-orders | Get all sale orders (paginated) | Cashier, Owner |
 | GET | /sale-orders/:id | Get sale order by ID | Cashier, Owner |
 | POST | /sale-orders | Create sale order | Cashier, Owner |
-| PUT | /sale-orders/:id | Update sale order | Cashier, Owner |
+| PATCH | /sale-orders/:id | Update sale order | Cashier, Owner |
 | DELETE | /sale-orders/:id | Delete sale order | Cashier, Owner |
 
 ### User Cashier Management
@@ -116,7 +116,7 @@ Setelah pertama kali dijalankan, sistem akan membuat user default:
 | GET | /users/cashier | Get all cashiers (paginated) | Owner |
 | GET | /users/cashier/:id | Get cashier by ID | Owner |
 | POST | /users/cashier | Create cashier | Owner |
-| PUT | /users/cashier/:id | Update cashier | Owner |
+| PATCH | /users/cashier/:id | Update cashier | Owner |
 | DELETE | /users/cashier/:id | Delete cashier | Owner |
 
 ## Response Format
