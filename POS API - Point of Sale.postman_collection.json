@@ -1,0 +1,1048 @@
+{
+	"info": {
+		"_postman_id": "379c36e1-d847-4b9c-8850-dc462bb4d9ce",
+		"name": "POS API - Point of Sale",
+		"description": "REST API untuk sistem Point of Sale dengan JWT Authentication dan RBAC",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30079054"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check if the API is running"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login as Owner",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('owner_token', jsonData.data.token);",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"    console.log('Owner token saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"owner\",\n    \"password\": \"owner123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as owner (has access to all endpoints)"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Cashier",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.collectionVariables.set('cashier_token', jsonData.data.token);",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"    console.log('Cashier token saved');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"cashier\",\n    \"password\": \"cashier123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as cashier (limited access - sale orders only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Login - Invalid Credentials",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"wronguser\",\n    \"password\": \"wrongpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Test login with invalid credentials - should return 401"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout current user (invalidates token)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sale Orders",
+			"item": [
+				{
+					"name": "Get All Sale Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale-orders?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get all sale orders with pagination. Accessible by both cashier and owner."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Sale Orders (Page 2)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale-orders?page=2&limit=5",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2"
+								},
+								{
+									"key": "limit",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Get sale orders page 2 with limit 5"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sale Order by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale-orders/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders",
+								"1"
+							]
+						},
+						"description": "Get a specific sale order by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Sale Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"John Doe\",\n    \"notes\": \"Rush order - deliver ASAP\",\n    \"items\": [\n        {\n            \"product_name\": \"Nasi Goreng\",\n            \"quantity\": 2,\n            \"unit_price\": 25000\n        },\n        {\n            \"product_name\": \"Es Teh Manis\",\n            \"quantity\": 2,\n            \"unit_price\": 5000\n        },\n        {\n            \"product_name\": \"Ayam Bakar\",\n            \"quantity\": 1,\n            \"unit_price\": 35000\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/sale-orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							]
+						},
+						"description": "Create a new sale order with items"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Sale Order (Minimal)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"Jane Smith\",\n    \"items\": [\n        {\n            \"product_name\": \"Kopi Hitam\",\n            \"quantity\": 1,\n            \"unit_price\": 10000\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/sale-orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							]
+						},
+						"description": "Create a sale order with minimal data"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Sale Order",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"Arrizal\",\n    \"status\": \"completed\",\n    \"notes\": \"Order completed and paid\",\n    \"items\": [\n        {\n            \"product_name\": \"Nasi Goreng Special\",\n            \"quantity\": 3,\n            \"unit_price\": 30000\n        },\n        {\n            \"product_name\": \"Es Jeruk\",\n            \"quantity\": 3,\n            \"unit_price\": 8000\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/sale-orders/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders",
+								"1"
+							]
+						},
+						"description": "Update an existing sale order. Status can be: pending, completed, cancelled"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Sale Order",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale-orders/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders",
+								"1"
+							]
+						},
+						"description": "Soft delete a sale order"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sale Order - Not Found",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale-orders/99999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders",
+								"99999"
+							]
+						},
+						"description": "Test getting a non-existent sale order - should return 404"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Cashier Management (Owner Only)",
+			"item": [
+				{
+					"name": "Get All Cashiers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/cashier?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "Get all cashier users with pagination. Owner only."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cashier by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/cashier/2",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier",
+								"2"
+							]
+						},
+						"description": "Get a specific cashier by ID. Owner only."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cashier",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"cashier_new\",\n    \"password\": \"password123\",\n    \"name\": \"New Cashier Employee\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/cashier",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier"
+							]
+						},
+						"description": "Create a new cashier user. Owner only."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cashier 2",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"cashier_budi\",\n    \"password\": \"budi123\",\n    \"name\": \"Budi Santoso\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/cashier",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier"
+							]
+						},
+						"description": "Create another cashier user"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Cashier",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"dido Mulyani\",\n    \"password\": \"didonew123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/cashier/8",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier",
+								"8"
+							]
+						},
+						"description": "Update an existing cashier. Owner only."
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate Cashier",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"is_active\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/cashier/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier",
+								"3"
+							]
+						},
+						"description": "Deactivate a cashier (soft disable). Owner only."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Cashier",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/cashier/3",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier",
+								"3"
+							]
+						},
+						"description": "Soft delete a cashier. Owner only."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cashier - Duplicate Username",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"cashier\",\n    \"password\": \"password123\",\n    \"name\": \"Duplicate Cashier\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/cashier",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier"
+							]
+						},
+						"description": "Test creating cashier with existing username - should return 400"
+					},
+					"response": []
+				}
+			],
+			"description": "update cashier and deactivated cashier api not found"
+		},
+		{
+			"name": "RBAC Tests",
+			"item": [
+				{
+					"name": "Cashier Access User Management (Should Fail)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{cashier_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/cashier",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier"
+							]
+						},
+						"description": "Test RBAC: Cashier trying to access user management - should return 403 Forbidden"
+					},
+					"response": []
+				},
+				{
+					"name": "Cashier Create User (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{cashier_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"hacker\",\n    \"password\": \"password123\",\n    \"name\": \"Hacker\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/cashier",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier"
+							]
+						},
+						"description": "Test RBAC: Cashier trying to create user - should return 403 Forbidden"
+					},
+					"response": []
+				},
+				{
+					"name": "No Token Access (Should Fail)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/sale-orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							]
+						},
+						"description": "Test accessing protected endpoint without token - should return 401 Unauthorized"
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Token Access (Should Fail)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid.token.here"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale-orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							]
+						},
+						"description": "Test accessing protected endpoint with invalid token - should return 401 Unauthorized"
+					},
+					"response": []
+				},
+				{
+					"name": "Cashier Access Sale Orders (Should Work)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{cashier_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale-orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							]
+						},
+						"description": "Test RBAC: Cashier accessing sale orders - should work (200 OK)"
+					},
+					"response": []
+				},
+				{
+					"name": "Owner Access Sale Orders (Should Work)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale-orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							]
+						},
+						"description": "Test RBAC: Owner accessing sale orders - should work (200 OK)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Error Cases",
+			"item": [
+				{
+					"name": "Create Sale Order - No Items",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_name\": \"John Doe\",\n    \"items\": []\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/sale-orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							]
+						},
+						"description": "Test creating sale order without items - should return 400"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Sale Order - Invalid Body",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"invalid\": \"body\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/sale-orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders"
+							]
+						},
+						"description": "Test creating sale order with invalid body - should return 400"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cashier - Short Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"newuser\",\n    \"password\": \"123\",\n    \"name\": \"Short Pass User\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/cashier",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier"
+							]
+						},
+						"description": "Test creating cashier with short password - should return 400"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cashier - Missing Fields",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"newuser\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/users/cashier",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier"
+							]
+						},
+						"description": "Test creating cashier with missing required fields - should return 400"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Cashier - Not Found",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{owner_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/cashier/99999",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"cashier",
+								"99999"
+							]
+						},
+						"description": "Test getting non-existent cashier - should return 404"
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Sale Order ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/sale-orders/abc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"sale-orders",
+								"abc"
+							]
+						},
+						"description": "Test getting sale order with invalid ID - should return 400"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ1c2VybmFtZSI6ImNhc2hpZXIiLCJyb2xlIjoiY2FzaGllciIsImV4cCI6MTc2NTMyMjAzMCwibmJmIjoxNzY1MjM1NjMwLCJpYXQiOjE3NjUyMzU2MzB9.Wc-mzRYQht5R6Cjf6QsVnIsTHaVnXh0S6x-VMbxh67E",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "owner_token",
+			"value": ""
+		},
+		{
+			"key": "cashier_token",
+			"value": ""
+		}
+	]
+}
